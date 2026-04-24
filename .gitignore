@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment / secrets
+.env
+.env.*
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime
+nohup.out
+*.log
+
+# Flatpak build artifacts
+.flatpak-builder/
+build-dir/
+flatpak/
+
+# pyenv local version pin
+.python-version
+
+# Local dev tooling — not part of the distributed project
+Makefile
+
+# AI coding assistants
+.claude/
+.cursor/
+.windsurf/
+.copilot/
+.aider*
+.continue/
+.codeium/
+.tabnine/
+.github/copilot*
