@@ -37,6 +37,12 @@ nohup.out
 build-dir/
 flatpak/
 
+# Snap build artifacts
+parts/
+prime/
+stage/
+*.snap
+
 # pyenv local version pin
 .python-version
 

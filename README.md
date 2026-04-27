@@ -43,6 +43,40 @@ This project wraps that logic in a GTK3 system tray GUI for convenient daily use
 
 ## Installation
 
+### Snap (easiest)
+
+The snap bundles all dependencies — no manual package installation required.
+
+#### From the Snap Store (once published)
+
+```bash
+sudo snap install keep-presence-gui
+sudo snap connect keep-presence-gui:personal-files
+```
+
+The `personal-files` connection is needed for the optional **Launch on system startup**
+feature (writes a `.desktop` entry to `~/.config/autostart/`). The app works without it
+if you don't use that feature.
+
+#### Build and install locally
+
+```bash
+sudo snap install snapcraft --classic
+git clone git@github.com:paweljelonek/keep-presence-gui.git
+cd keep-presence-gui
+snapcraft                                                         # builds keep-presence-gui_0.1_amd64.snap
+sudo snap install keep-presence-gui_*.snap --dangerous
+sudo snap connect keep-presence-gui:personal-files
+```
+
+> **Note:** the snap redirects config storage to
+> `~/snap/keep-presence-gui/current/` instead of `~/.config/keep-presence-gui/`.
+> Settings configured before installing the snap are not migrated automatically.
+
+---
+
+### Manual installation
+
 Two paths depending on how you manage Python. Option A is simpler for most users.
 
 ### Option A — system Python (recommended)
@@ -193,6 +227,8 @@ keep-presence-gui/
 │   └── tray.py              # System tray (XApp or AppIndicator3)
 ├── icon.png                 # Tray icon — active state
 ├── icon-paused.png          # Tray icon — paused state
+├── snap/
+│   └── snapcraft.yaml       # Snap package definition
 ├── requirements.txt
 ├── LICENSE
 └── README.md

@@ -1,0 +1,76 @@
+name: keep-presence-gui
+base: core22
+version: '0.1'
+summary: GTK3 tray app that prevents screensaver and idle
+description: |
+  System tray application that keeps your computer awake by simulating
+  mouse movements or keyboard presses when you step away from your machine.
+
+  Supports mouse, keyboard, both, and scroll modes with configurable idle
+  interval. Optional desktop notifications, single-instance enforcement,
+  and autostart on login.
+
+  Works on X11 with Cinnamon, GNOME, XFCE, and other desktops that support
+  AppIndicator3 system tray icons.
+
+grade: stable
+confinement: strict
+icon: icon.png
+
+# ── Application ──────────────────────────────────────────────────────────────
+
+apps:
+  keep-presence-gui:
+    command: bin/python3 $SNAP/main.py
+    # gnome extension provides GTK3 runtime, sets GI_TYPELIB_PATH, x11, desktop plugs
+    extensions: [gnome]
+    environment:
+      # redirect config to snap's writable area (~/.config → ~/snap/.../current/)
+      XDG_CONFIG_HOME: $SNAP_USER_DATA
+    plugs:
+      - unity7          # AppIndicator3 system tray
+      - notifications   # org.freedesktop.Notifications D-Bus
+      - personal-files  # write ~/.config/autostart/ for system startup feature
+
+# ── Interface declarations ────────────────────────────────────────────────────
+
+plugs:
+  personal-files:
+    interface: personal-files
+    write:
+      - $HOME/.config/autostart
+
+# ── Build ─────────────────────────────────────────────────────────────────────
+
+parts:
+  # Copy application source files as-is
+  app:
+    plugin: dump
+    source: .
+    stage:
+      - main.py
+      - src/
+      - icon.png
+      - icon-paused.png
+
+  # Build Python venv and install dependencies
+  deps:
+    plugin: python
+    source: .
+    python-packages:
+      - pynput
+      # PyGObject compiled against core22 GLib (2.72) — compatible with the
+      # gnome-42-2204 content snap used by the gnome extension
+      - PyGObject
+    build-packages:
+      - libgirepository1.0-dev
+      - libcairo2-dev
+      - pkg-config
+      - python3-dev
+    stage-packages:
+      # Typelib and shared lib for desktop notifications
+      - gir1.2-notify-0.7
+      - libnotify4
+      # Typelib and shared lib for AppIndicator3 tray backend
+      - gir1.2-ayatana-appindicator3-0.1
+      - libayatana-appindicator3-1
