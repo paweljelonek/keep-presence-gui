@@ -4,12 +4,16 @@ from pathlib import Path
 
 import about
 
-AUTOSTART_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "autostart"
+AUTOSTART_DIR = Path.home() / ".config" / "autostart"
 DESKTOP_PATH = AUTOSTART_DIR / "keep-presence-gui.desktop"
 
 _BASE_DIR = Path(__file__).resolve().parent.parent
 _MAIN_PY = _BASE_DIR / "main.py"
 _ICON_PATH = _BASE_DIR / "icon.png"
+
+# When running as a snap the desktop session launches files outside the snap
+# sandbox, so sys.executable would be an inaccessible path. Use `snap run`.
+_SNAP_NAME = os.environ.get("SNAP_NAME")
 
 
 def is_enabled():
@@ -40,8 +44,13 @@ def set_enabled(enabled):
 
 
 def _desktop_entry():
-    exec_cmd = f"{sys.executable} {_MAIN_PY}"
-    icon_line = f"Icon={_ICON_PATH}\n" if _ICON_PATH.exists() else ""
+    if _SNAP_NAME:
+        exec_cmd = f"snap run {_SNAP_NAME}"
+        snap_root = os.environ.get("SNAP", "")
+        icon_line = f"Icon={snap_root}/icon.png\n" if snap_root else ""
+    else:
+        exec_cmd = f"{sys.executable} {_MAIN_PY}"
+        icon_line = f"Icon={_ICON_PATH}\n" if _ICON_PATH.exists() else ""
     return (
         "[Desktop Entry]\n"
         "Type=Application\n"
