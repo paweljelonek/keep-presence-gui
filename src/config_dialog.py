@@ -10,30 +10,37 @@ import system_autostart
 from presence import PresenceKeeper
 
 _lock = threading.Lock()
-_open = False
+_config_open = False
+_about_open = False
 
 
-def _mark_closed():
-    global _open
+def _mark_config_closed():
+    global _config_open
     with _lock:
-        _open = False
+        _config_open = False
+
+
+def _mark_about_closed():
+    global _about_open
+    with _lock:
+        _about_open = False
 
 
 def open_dialog(keeper):
-    global _open
+    global _config_open
     with _lock:
-        if _open:
+        if _config_open:
             return
-        _open = True
+        _config_open = True
     GLib.idle_add(_show_config, keeper)
 
 
 def open_about():
-    global _open
+    global _about_open
     with _lock:
-        if _open:
+        if _about_open:
             return
-        _open = True
+        _about_open = True
     GLib.idle_add(_show_about_standalone)
 
 
@@ -43,7 +50,7 @@ def _show_config(keeper):
 
 
 def _show_about_standalone():
-    _AboutWindow(on_close=_mark_closed).show_all()
+    _AboutWindow(on_close=_mark_about_closed).show_all()
     return False
 
 
@@ -55,7 +62,7 @@ class _ConfigWindow(Gtk.Window):
         self.set_resizable(False)
         self.set_border_width(16)
         self.set_position(Gtk.WindowPosition.CENTER)
-        self.connect("destroy", lambda *_: _mark_closed())
+        self.connect("destroy", lambda *_: _mark_config_closed())
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         self.add(vbox)
@@ -132,14 +139,6 @@ class _ConfigWindow(Gtk.Window):
         self._toggle_btn.connect("clicked", self._on_toggle)
         btn_row.pack_start(self._toggle_btn, False, False, 0)
 
-        about_btn = Gtk.Button(label="About")
-        about_btn.connect("clicked", lambda *_: self._show_about())
-        btn_row.pack_start(about_btn, False, False, 0)
-
-        quit_btn = Gtk.Button(label="Quit app")
-        quit_btn.connect("clicked", self._on_quit_app)
-        btn_row.pack_start(quit_btn, False, False, 0)
-
         right = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         btn_row.pack_end(right, False, False, 0)
 
@@ -177,14 +176,6 @@ class _ConfigWindow(Gtk.Window):
         except OSError as e:
             print(f"[config_dialog] could not update system autostart: {e}")
         self.destroy()
-
-    def _on_quit_app(self, *_):
-        import tray as tray_mod
-        self.destroy()
-        tray_mod.request_quit(self._keeper)
-
-    def _show_about(self):
-        _AboutWindow(parent=self).show_all()
 
 
 class _AboutWindow(Gtk.Window):
